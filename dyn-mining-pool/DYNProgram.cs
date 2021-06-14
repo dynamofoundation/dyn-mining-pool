@@ -10,7 +10,7 @@ namespace dyn_mining_pool
 
 
 
-        public static void CalcHash(string blockHex, string strProgram)
+        public static string CalcHash(string blockHex, string strProgram)
         {
 
             string headerHex = blockHex.Substring(0, 160);
@@ -34,11 +34,12 @@ namespace dyn_mining_pool
 
             byte[] res1 = ConvertToBytes(iResult);
 
-
+            /*
             string shaHex = BitConverter.ToString(result).Replace("-", "");
             Console.WriteLine(shaHex);
             shaHex = BitConverter.ToString(res1).Replace("-", "");
             Console.WriteLine(shaHex);
+            */
 
 
 
@@ -150,16 +151,19 @@ namespace dyn_mining_pool
                     }
                 }
 
+                /*
                 byte[] res2 = ConvertToBytes(iResult);
                 shaHex = BitConverter.ToString(res2).Replace("-", "");
                 Console.WriteLine(line_ptr + "   " + shaHex);
+                */
 
 
                 line_ptr++;
             }
 
 
-
+            byte[] bHashresult = ConvertToBytes(iResult);
+            return BitConverter.ToString(bHashresult).Replace("-", "");
         }
 
 

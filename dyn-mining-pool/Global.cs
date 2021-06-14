@@ -14,6 +14,9 @@ namespace dyn_mining_pool
 
         public static string AlgoProgram;
         public static string PrevBlockHash;
+        public static string CurrPoolTarget;
+        public static string CurrBlockTarget;
+
 
     }
 }

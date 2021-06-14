@@ -88,8 +88,10 @@ namespace dyn_mining_pool
                 dynamic block = JsonConvert.DeserializeObject<dynamic>(blockResponse);
 
                 string target = block.result.target;
+                Global.CurrBlockTarget = target;
                 string newTarget = target.Substring(4) + "0000";
                 block.result.target = newTarget;
+                Global.CurrPoolTarget = newTarget;
 
                 strResponse = JsonConvert.SerializeObject(block);
 
@@ -101,7 +103,77 @@ namespace dyn_mining_pool
             {
 
                 string blockHex = rpcData["params"][0];
-                DYNProgram.CalcHash(blockHex, Global.AlgoProgram);
+                string hashA = DYNProgram.CalcHash(blockHex, Global.AlgoProgram);
+                Console.WriteLine(hashA);
+                string nativeTarget = Global.CurrPoolTarget;
+                byte[] bHashA = DYNProgram.StringToByteArray(hashA);
+                byte[] bNativeTarget = DYNProgram.StringToByteArray(nativeTarget);
+
+                bool ok = false;
+                bool done = false;
+                int i = 0;
+                while ((!ok) && (i < 32) && (!done))
+                    if (bHashA[i] < bNativeTarget[i])
+                        ok = true;
+                    else if (bHashA[i] == bNativeTarget[i])
+                        i++;
+                    else
+                        done = true;
+
+                //they gave us a good hash - add it to their tally and submit if it meets the network hashrate
+                if (ok)
+                {                    
+
+                    strResponse = "{\"result\":\"ok\",\"error\":null,\"id\":0}";
+
+                    //check if we should submit
+                    nativeTarget = Global.CurrBlockTarget;
+                    bNativeTarget = DYNProgram.StringToByteArray(nativeTarget);
+                    i = 0;
+                    ok = false;
+                    done = false;
+                    while ((!ok) && (i < 32) && (!done))
+                        if (bHashA[i] < bNativeTarget[i])
+                            ok = true;
+                        else if (bHashA[i] == bNativeTarget[i])
+                            i++;
+                        else
+                            done = true;
+
+                    
+                    if (ok)
+                    {
+                        var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+
+                        var postData = text;
+                        var data = Encoding.ASCII.GetBytes(postData);
+
+                        webrequest.Method = "POST";
+                        webrequest.ContentType = "application/x-www-form-urlencoded";
+                        webrequest.ContentLength = data.Length;
+
+                        var username = Global.FullNodeUser;
+                        var password = Global.FullNodePass;
+                        string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+                        webrequest.Headers.Add("Authorization", "Basic " + encoded);
+
+
+                        using (var stream = webrequest.GetRequestStream())
+                        {
+                            stream.Write(data, 0, data.Length);
+                        }
+
+                        var webresponse = (HttpWebResponse)webrequest.GetResponse();
+
+                        string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
+                        //todo - save?
+
+
+
+                    }
+
+
+                }
 
             }
 
