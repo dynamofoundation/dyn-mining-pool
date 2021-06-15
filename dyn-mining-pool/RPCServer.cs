@@ -20,13 +20,14 @@ namespace dyn_mining_pool
 
             HttpListener listener = new HttpListener();
 
-            listener.Prefixes.Add("http://127.0.0.1:6434/");
+            listener.Prefixes.Add("http://10.1.0.29:6434/");
 
             listener.Start();
             Console.WriteLine("Listening...");
 
             while (!Global.Shutdown)
             {
+                Global.updateRand(17);
                 HttpListenerContext context = listener.GetContext();
                 RPCWorker worker = new RPCWorker();
                 worker.context = context;

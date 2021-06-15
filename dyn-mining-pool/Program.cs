@@ -7,6 +7,7 @@ namespace dyn_mining_pool
     {
         static void Main(string[] args)
         {
+            uint loops = 0;
 
             RPCServer server = new RPCServer();
             Thread t1 = new Thread(new ThreadStart(server.run));
@@ -15,6 +16,8 @@ namespace dyn_mining_pool
             while (!Global.Shutdown)
             {
                 Thread.Sleep(100);
+                loops++;
+                Global.updateRand(loops);
             }
 
         }
