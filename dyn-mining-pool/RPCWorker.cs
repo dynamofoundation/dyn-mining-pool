@@ -25,6 +25,7 @@ namespace dyn_mining_pool
                 string text = reader.ReadToEnd();
 
                 dynamic rpcData = JsonConvert.DeserializeObject<dynamic>(text);
+                
 
                 string strResponse = "";
 
@@ -116,6 +117,8 @@ namespace dyn_mining_pool
                     string blockHex = rpcData["params"][0];
                     string hashA = DYNProgram.CalcHash(blockHex, Global.AlgoProgram);
                     Console.WriteLine(hashA);
+
+                    //TODO - compare our hash to theirs
                     string nativeTarget = Global.CurrPoolTarget;
                     byte[] bHashA = DYNProgram.StringToByteArray(hashA);
                     byte[] bNativeTarget = DYNProgram.StringToByteArray(nativeTarget);
@@ -134,12 +137,15 @@ namespace dyn_mining_pool
                     Global.updateRand((uint)i);
 
                     //they gave us a good hash - add it to their tally and submit if it meets the network hashrate
+
+
                     if (ok)
                     {
 
+                        //TODO - save their hash in the database
+
                         //check if we should submit
                         nativeTarget = Global.CurrBlockTarget;
-                        Console.WriteLine(Global.CurrBlockTarget);
                         bNativeTarget = DYNProgram.StringToByteArray(nativeTarget);
                         i = 0;
                         ok = false;
@@ -180,7 +186,7 @@ namespace dyn_mining_pool
                             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
                             Console.WriteLine(submitResponse);
 
-
+                            //TODO - save submnitted block to the database
 
 
                         }

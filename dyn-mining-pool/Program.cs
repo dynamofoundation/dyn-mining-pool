@@ -9,6 +9,8 @@ namespace dyn_mining_pool
         {
             uint loops = 0;
 
+            Database.CreateOrOpenDatabase();
+
             RPCServer server = new RPCServer();
             Thread t1 = new Thread(new ThreadStart(server.run));
             t1.Start();
