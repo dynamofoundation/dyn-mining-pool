@@ -19,7 +19,7 @@ namespace dyn_mining_pool
 
             if (exists == 0)
             {
-                cmd = new SqliteCommand("create table share (share_id integer primary key, share_timestamp integer, share_wallet text, share_hash text) ", conn);
+                cmd = new SqliteCommand("create table share (share_id integer primary key, share_timestamp integer, share_wallet text, share_hash text, share_status text) ", conn);
                 cmd.ExecuteNonQuery();
             }
 
@@ -28,7 +28,7 @@ namespace dyn_mining_pool
 
             if (exists == 0)
             {
-                cmd = new SqliteCommand("create table share (reward_id integer primary key, reward_timestamp integer, reward_height integer, reward_amount integer) ", conn);
+                cmd = new SqliteCommand("create table reward (reward_id integer primary key, reward_timestamp integer, reward_height integer, reward_amount integer) ", conn);
                 cmd.ExecuteNonQuery();
             }
 
@@ -44,9 +44,17 @@ namespace dyn_mining_pool
         }
 
 
-        public static void SaveShare ( string wallet )
+        public static void SaveShare ( string wallet, string hash )
         {
 
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            conn.Open();
+            var cmd = new SqliteCommand("insert into share (share_timestamp, share_wallet, share_hash, share_status) values (@p1,@p2,@p3,@p4)", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p1", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
+            cmd.Parameters.Add(new SqliteParameter("@p2", wallet));
+            cmd.Parameters.Add(new SqliteParameter("@p3", hash));
+            cmd.Parameters.Add(new SqliteParameter("@p4", "pending"));
+            cmd.ExecuteNonQuery();
         }
 
     }

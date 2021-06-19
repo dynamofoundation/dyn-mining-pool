@@ -15,6 +15,10 @@ namespace dyn_mining_pool
             Thread t1 = new Thread(new ThreadStart(server.run));
             t1.Start();
 
+            Distributor distributor = new Distributor();
+            Thread t2 = new Thread(new ThreadStart(distributor.run));
+            t2.Start();
+
             while (!Global.Shutdown)
             {
                 Thread.Sleep(100);

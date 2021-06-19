@@ -115,6 +115,7 @@ namespace dyn_mining_pool
                     Global.updateRand(71);
 
                     string blockHex = rpcData["params"][0];
+                    string minerWallet = rpcData["params"][1];
                     string hashA = DYNProgram.CalcHash(blockHex, Global.AlgoProgram);
                     Console.WriteLine(hashA);
 
@@ -137,12 +138,9 @@ namespace dyn_mining_pool
                     Global.updateRand((uint)i);
 
                     //they gave us a good hash - add it to their tally and submit if it meets the network hashrate
-
-
                     if (ok)
                     {
-
-                        //TODO - save their hash in the database
+                        Database.SaveShare(minerWallet, hashA);
 
                         //check if we should submit
                         nativeTarget = Global.CurrBlockTarget;
@@ -200,7 +198,7 @@ namespace dyn_mining_pool
                     Global.updateRand(103);
 
                     dynamic poolData = new System.Dynamic.ExpandoObject();
-                    poolData.walletAddr = Global.walletAddr;
+                    poolData.walletAddr = Global.miningWallet;
                     poolData.nonce = (uint)(Global.randomNum(31) * DateTime.UnixEpoch.Ticks);
 
                     strResponse = JsonConvert.SerializeObject(poolData);
@@ -226,6 +224,7 @@ namespace dyn_mining_pool
             }
             catch(Exception e)
             {
+                Console.WriteLine("Error in worker thread:" + e.Message);
 
             }
         }
