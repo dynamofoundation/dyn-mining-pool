@@ -41,6 +41,22 @@ namespace dyn_mining_pool
                 cmd.ExecuteNonQuery();
             }
 
+            cmd = new SqliteCommand("select count(name) from sqlite_master where type = 'table' and name = 'setting'", conn);
+            exists = (Int64)cmd.ExecuteScalar();
+
+            if (exists == 0)
+            {
+                cmd = new SqliteCommand("create table setting (setting_key text, setting_value text) ", conn);
+                cmd.ExecuteNonQuery();
+
+                cmd = new SqliteCommand("insert into setting (setting_key, setting_value) values (@p1,@p2)", conn);
+                cmd.Parameters.Add(new SqliteParameter("@p1", "last_payout_run"));
+                cmd.Parameters.Add(new SqliteParameter("@p2", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
+                cmd.ExecuteNonQuery();
+
+
+            }
+
         }
 
 
@@ -55,6 +71,27 @@ namespace dyn_mining_pool
             cmd.Parameters.Add(new SqliteParameter("@p3", hash));
             cmd.Parameters.Add(new SqliteParameter("@p4", "pending"));
             cmd.ExecuteNonQuery();
+        }
+
+        public static string GetSetting (string key)
+        {
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            conn.Open();
+            var cmd = new SqliteCommand("select setting_value from setting where setting_key = @p1", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p1", key));
+            return (string)cmd.ExecuteScalar();
+
+        }
+
+        public static void UpdateSetting (string key, string value)
+        {
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            conn.Open();
+            var cmd = new SqliteCommand("update setting set setting_value = @p1 where setting_key = @p2", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p1", value));
+            cmd.Parameters.Add(new SqliteParameter("@p2", key));
+            cmd.ExecuteNonQuery();
+
         }
 
     }

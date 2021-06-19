@@ -18,7 +18,9 @@ namespace dyn_mining_pool
         public static string CurrPoolTarget;
         public static string CurrBlockTarget;
 
-        public static int feePercent = 2;
+        public static uint feePercent = 2;
+
+        public static int secondsBetweenPayouts = 10; //60 * 60 * 24;     //one day
 
         public static string miningWallet = "dy1qqsyj5s9t8eqtzn9x8twfnelxj7am9q9dntt55y";
         public static string profitWallet = "dy1qqsyj5s9t8eqtzn9x8twfnelxj7am9q9dntt55y";
