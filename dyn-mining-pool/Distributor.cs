@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 
@@ -46,6 +48,46 @@ namespace dyn_mining_pool
 
                 Thread.Sleep(10000);
             }
+        }
+
+
+        public UInt64 getMiningWalletBalance()
+        {
+            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+
+            string postData = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"getbalance\", \"params\": [\"*\", 10]}";
+            var data = Encoding.ASCII.GetBytes(postData);
+            Console.WriteLine(postData);
+
+            webrequest.Method = "POST";
+            webrequest.ContentType = "application/x-www-form-urlencoded";
+            webrequest.ContentLength = data.Length;
+
+            var username = Global.FullNodeUser;
+            var password = Global.FullNodePass;
+            string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+            webrequest.Headers.Add("Authorization", "Basic " + encoded);
+
+
+            using (var stream = webrequest.GetRequestStream())
+            {
+                stream.Write(data, 0, data.Length);
+            }
+
+            var webresponse = (HttpWebResponse)webrequest.GetResponse();
+
+            string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
+            Console.WriteLine(submitResponse);
+
+            { "result":109.00000000,"error":null,"id":"1"}
+
+            return 0;
+        }
+
+
+        public void sendMoney(string wallet, UInt64 amount)
+        {
+
         }
     }
 }

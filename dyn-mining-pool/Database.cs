@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static dyn_mining_pool.Distributor;
 
 namespace dyn_mining_pool
 {
@@ -92,6 +93,13 @@ namespace dyn_mining_pool
             cmd.Parameters.Add(new SqliteParameter("@p2", key));
             cmd.ExecuteNonQuery();
 
+        }
+
+        public static List<miningShare> CountShares(Int64 endTime)
+        {
+            List<miningShare> result = new List<miningShare>();
+
+            return result;
         }
 
     }
