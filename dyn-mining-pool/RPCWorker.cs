@@ -33,6 +33,7 @@ namespace dyn_mining_pool
 
                 Global.updateRand((uint)text.Length);
 
+                Console.WriteLine("REQ:" + method);
                 if (method == "gethashfunction")
                 {
                     Global.updateRand(37);
@@ -106,6 +107,8 @@ namespace dyn_mining_pool
 
                     Global.PrevBlockHash = block.result.previousblockhash;
 
+                    //Console.WriteLine(strResponse);
+
                 }
 
                 else if (method == "submitblock")
@@ -117,7 +120,7 @@ namespace dyn_mining_pool
                     string blockHex = rpcData["params"][0];
                     string minerWallet = rpcData["params"][1];
                     string hashA = DYNProgram.CalcHash(blockHex, Global.AlgoProgram);
-                    Console.WriteLine(hashA);
+                    //Console.WriteLine(hashA);
 
                     //TODO - compare our hash to theirs
                     string nativeTarget = Global.CurrPoolTarget;
@@ -182,7 +185,7 @@ namespace dyn_mining_pool
                             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
                             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
-                            Console.WriteLine(submitResponse);
+                            //Console.WriteLine(submitResponse);
 
                             //TODO - save submnitted block to the database
 
@@ -206,7 +209,8 @@ namespace dyn_mining_pool
                 }
 
 
-
+                Console.WriteLine("RESP:" + strResponse);
+                Console.WriteLine();
 
                 HttpListenerResponse response = context.Response;
 
@@ -225,6 +229,7 @@ namespace dyn_mining_pool
             catch(Exception e)
             {
                 Console.WriteLine("Error in worker thread:" + e.Message);
+                Console.WriteLine(e.StackTrace);
 
             }
         }
