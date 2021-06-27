@@ -15,6 +15,13 @@ namespace dyn_mining_pool
         {
             public string wallet;
             public UInt64 shares;
+
+            public miningShare(string iWallet, UInt64 iShares)
+            {
+                wallet = iWallet;
+                shares = iShares;
+            }
+
         }
 
         public void run()

@@ -20,7 +20,7 @@ namespace dyn_mining_pool
 
         public static uint feePercent = 2;
 
-        public static int secondsBetweenPayouts = 30; //60 * 60 * 24;     //one day
+        public static int secondsBetweenPayouts = 60 * 60; //60 * 60 * 24;     //one day
 
         public static string miningWallet = "dy1qnyyut8z689gm8zq2mem2dxn086kpwnhdxt3ex8";
         public static string profitWallet = "dy1qqsyj5s9t8eqtzn9x8twfnelxj7am9q9dntt55y";

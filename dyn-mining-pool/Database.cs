@@ -99,6 +99,20 @@ namespace dyn_mining_pool
         {
             List<miningShare> result = new List<miningShare>();
 
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            conn.Open();
+            var cmd = new SqliteCommand("select share_wallet, count(1) from share where share_status = 'pending' and share_timestamp < " + endTime + " group by share_wallet", conn);
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string wallet = reader[0].ToString();
+                UInt32 shares = (UInt32)Convert.ToInt32 ( reader[1].ToString());
+                result.Add(new miningShare(wallet, shares));
+            }
+
+            cmd = new SqliteCommand("update share set share_status = 'paid' where share_status = 'pending' and share_timestamp < " + endTime, conn);
+            cmd.ExecuteNonQuery();
+
             return result;
         }
 
