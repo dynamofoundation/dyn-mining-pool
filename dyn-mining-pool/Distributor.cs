@@ -76,7 +76,7 @@ namespace dyn_mining_pool
 
             string postData = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"getbalance\", \"params\": [\"*\", 10]}";
             var data = Encoding.ASCII.GetBytes(postData);
-            Console.WriteLine(postData);
+            //Console.WriteLine(postData);
 
             webrequest.Method = "POST";
             webrequest.ContentType = "application/x-www-form-urlencoded";
@@ -96,7 +96,7 @@ namespace dyn_mining_pool
             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
-            Console.WriteLine(submitResponse);
+            //Console.WriteLine(submitResponse);
 
             dynamic walletData = JsonConvert.DeserializeObject<dynamic>(submitResponse);
 
