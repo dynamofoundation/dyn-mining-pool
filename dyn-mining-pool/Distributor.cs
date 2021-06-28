@@ -85,6 +85,7 @@ namespace dyn_mining_pool
                 stream.Write(data, 0, data.Length);
             }
 
+
             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
