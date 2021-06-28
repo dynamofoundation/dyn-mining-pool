@@ -11,10 +11,12 @@ namespace dyn_mining_pool
 
             Database.CreateOrOpenDatabase();
 
+            Console.WriteLine("Starting RPC server...");
             RPCServer server = new RPCServer();
             Thread t1 = new Thread(new ThreadStart(server.run));
             t1.Start();
 
+            Console.WriteLine("Starting distributor...");
             Distributor distributor = new Distributor();
             Thread t2 = new Thread(new ThreadStart(distributor.run));
             t2.Start();

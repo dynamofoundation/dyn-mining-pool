@@ -35,24 +35,32 @@ namespace dyn_mining_pool
                 if (unixNow - lastRun > Global.secondsBetweenPayouts)
                 {
                     Console.WriteLine("Running payout");
-                    Database.UpdateSetting("last_payout_run", unixNow.ToString());
 
-                    UInt64 walletBalance = getMiningWalletBalance();
-                    if (walletBalance > 0)
+                    try
                     {
-                        UInt64 fee = (walletBalance * Global.feePercent) / 100;
-                        sendMoney(Global.profitWallet, fee);
-                        walletBalance -= fee;
-                        List<miningShare> shares = Database.CountShares(unixNow);
-                        UInt64 totalShares = 0;
-                        foreach (miningShare s in shares)
-                            totalShares += s.shares;
-                        foreach (miningShare s in shares)
+                        UInt64 walletBalance = getMiningWalletBalance();
+                        if (walletBalance > 0)
                         {
-                            UInt64 payout = (walletBalance * s.shares) / totalShares;
-                            sendMoney(s.wallet, payout);
+                            UInt64 fee = (walletBalance * Global.feePercent) / 100;
+                            sendMoney(Global.profitWallet, fee);
+                            walletBalance -= fee;
+                            List<miningShare> shares = Database.CountShares(unixNow);
+                            UInt64 totalShares = 0;
+                            foreach (miningShare s in shares)
+                                totalShares += s.shares;
+                            foreach (miningShare s in shares)
+                            {
+                                UInt64 payout = (walletBalance * s.shares) / totalShares;
+                                sendMoney(s.wallet, payout);
+                            }
                         }
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error in running payout, retrying in 10 seconds.");
+                    }
+
+                    Database.UpdateSetting("last_payout_run", unixNow.ToString());
 
 
                 }

@@ -33,7 +33,7 @@ namespace dyn_mining_pool
 
                 Global.updateRand((uint)text.Length);
 
-                Console.WriteLine("REQ:" + method);
+                //Console.WriteLine("REQ:" + method);
                 if (method == "gethashfunction")
                 {
                     Global.updateRand(37);
@@ -209,8 +209,8 @@ namespace dyn_mining_pool
                 }
 
 
-                Console.WriteLine("RESP:" + strResponse);
-                Console.WriteLine();
+                //Console.WriteLine("RESP:" + strResponse);
+                //Console.WriteLine();
 
                 HttpListenerResponse response = context.Response;
 
