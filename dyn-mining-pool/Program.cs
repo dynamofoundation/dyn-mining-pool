@@ -9,6 +9,8 @@ namespace dyn_mining_pool
         {
             uint loops = 0;
 
+            Global.LoadSettings();
+
             Database.CreateOrOpenDatabase();
 
             Console.WriteLine("Starting RPC server...");
@@ -25,7 +27,7 @@ namespace dyn_mining_pool
             {
                 Thread.Sleep(100);
                 loops++;
-                Global.updateRand(loops);
+                Global.UpdateRand(loops);
             }
 
         }

@@ -24,6 +24,20 @@ namespace dyn_mining_pool
 
         }
 
+        public class pendingPayout
+        {
+            public string wallet;
+            public UInt64 amount;
+
+            public pendingPayout(string iWallet, UInt64 iAmount)
+            {
+                wallet = iWallet;
+                amount = iAmount;
+            }
+
+        }
+
+
         public void run()
         {
 
@@ -38,7 +52,7 @@ namespace dyn_mining_pool
 
                     try
                     {
-                        UInt64 walletBalance = getMiningWalletBalance();
+                        UInt64 walletBalance = getMiningWalletBalance() - Database.pendingPayouts();
                         if (walletBalance > 0)
                         {
                             UInt64 fee = (walletBalance * Global.feePercent) / 100;
@@ -51,8 +65,22 @@ namespace dyn_mining_pool
                             foreach (miningShare s in shares)
                             {
                                 UInt64 payout = (walletBalance * s.shares) / totalShares;
-                                sendMoney(s.wallet, payout);
+                                if (payout >= Global.minPayout)
+                                    sendMoney(s.wallet, payout);
+                                else
+                                    Database.SavePendingPayout(s.wallet, payout);
                             }
+
+                            List<pendingPayout> pending = Database.GetPendingPayouts();
+                            foreach (pendingPayout p in pending)
+                            {
+                                if (p.amount > Global.minPayout)
+                                {
+                                    sendMoney(p.wallet, p.amount);
+                                    Database.DeletePendingPayouy(p.wallet);
+                                }
+                            }
+
                         }
                     }
                     catch (Exception e)
@@ -76,7 +104,6 @@ namespace dyn_mining_pool
 
             string postData = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"getbalance\", \"params\": [\"*\", 10]}";
             var data = Encoding.ASCII.GetBytes(postData);
-            //Console.WriteLine(postData);
 
             webrequest.Method = "POST";
             webrequest.ContentType = "application/x-www-form-urlencoded";
@@ -97,7 +124,6 @@ namespace dyn_mining_pool
             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
-            //Console.WriteLine(submitResponse);
 
             dynamic walletData = JsonConvert.DeserializeObject<dynamic>(submitResponse);
 
@@ -105,7 +131,6 @@ namespace dyn_mining_pool
 
             return amount;
         }
-
 
         public void sendMoney(string wallet, UInt64 amount)
         {
@@ -136,7 +161,8 @@ namespace dyn_mining_pool
             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
-            Console.WriteLine(submitResponse);
+
+            Database.SavePayout(wallet, amount);
 
         }
     }

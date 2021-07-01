@@ -31,12 +31,12 @@ namespace dyn_mining_pool
 
                 string method = rpcData.method;
 
-                Global.updateRand((uint)text.Length);
+                Global.UpdateRand((uint)text.Length);
 
                 //Console.WriteLine("REQ:" + method);
                 if (method == "gethashfunction")
                 {
-                    Global.updateRand(37);
+                    Global.UpdateRand(37);
                     var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
 
                     var postData = text;
@@ -69,7 +69,7 @@ namespace dyn_mining_pool
                 }
                 else if (method == "getblocktemplate")
                 {
-                    Global.updateRand(43);
+                    Global.UpdateRand(43);
 
                     var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
 
@@ -115,7 +115,7 @@ namespace dyn_mining_pool
                 {
                     strResponse = "{\"result\":\"ok\",\"error\":null,\"id\":0}";
 
-                    Global.updateRand(71);
+                    Global.UpdateRand(71);
 
                     string blockHex = rpcData["params"][0];
                     string minerWallet = rpcData["params"][1];
@@ -138,7 +138,7 @@ namespace dyn_mining_pool
                         else
                             done = true;
 
-                    Global.updateRand((uint)i);
+                    Global.UpdateRand((uint)i);
 
                     //they gave us a good hash - add it to their tally and submit if it meets the network hashrate
                     if (ok)
@@ -185,10 +185,8 @@ namespace dyn_mining_pool
                             var webresponse = (HttpWebResponse)webrequest.GetResponse();
 
                             string submitResponse = new StreamReader(webresponse.GetResponseStream()).ReadToEnd();
-                            //Console.WriteLine(submitResponse);
 
-                            //TODO - save submnitted block to the database
-
+                            Database.SaveReward(hashA);
 
                         }
 
@@ -198,19 +196,16 @@ namespace dyn_mining_pool
                 }
                 else if (method == "getpooldata")
                 {
-                    Global.updateRand(103);
+                    Global.UpdateRand(103);
 
                     dynamic poolData = new System.Dynamic.ExpandoObject();
                     poolData.walletAddr = Global.miningWallet;
-                    poolData.nonce = (uint)(Global.randomNum(31) * DateTime.UnixEpoch.Ticks);
+                    poolData.nonce = (uint)(Global.RandomNum(31) * DateTime.UnixEpoch.Ticks);
 
                     strResponse = JsonConvert.SerializeObject(poolData);
 
                 }
 
-
-                //Console.WriteLine("RESP:" + strResponse);
-                //Console.WriteLine();
 
                 HttpListenerResponse response = context.Response;
 
@@ -224,7 +219,7 @@ namespace dyn_mining_pool
                 for (int i = 0; i < buffer.Length; i++)
                     sum += buffer[i];
 
-                Global.updateRand(sum);
+                Global.UpdateRand(sum);
             }
             catch(Exception e)
             {
