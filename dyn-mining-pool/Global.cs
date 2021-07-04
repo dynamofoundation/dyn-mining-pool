@@ -11,6 +11,13 @@ namespace dyn_mining_pool
 
         public static bool Shutdown = false;
 
+        public static string AlgoProgram;
+        public static string PrevBlockHash;
+        public static string CurrPoolTarget;
+        public static string CurrBlockTarget;
+
+
+        /*
         public static string PoolListenerEndpoint = "http://10.1.0.29:6434/";
 
         public static string FullNodeRPC = "http://10.1.0.90:6433/";
@@ -18,10 +25,6 @@ namespace dyn_mining_pool
         public static string FullNodePass = "123456";
         public static string DatabaseLocation = @"C:\pool\mining_pool.db";
 
-        public static string AlgoProgram;
-        public static string PrevBlockHash;
-        public static string CurrPoolTarget;
-        public static string CurrBlockTarget;
 
         public static uint feePercent = 2;
 
@@ -30,6 +33,60 @@ namespace dyn_mining_pool
 
         public static string miningWallet = "dy1qnyyut8z689gm8zq2mem2dxn086kpwnhdxt3ex8";
         public static string profitWallet = "dy1qqsyj5s9t8eqtzn9x8twfnelxj7am9q9dntt55y";
+        */
+
+        public static string PoolListenerEndpoint() {
+            return settings["PoolListenerEndpoint"];
+        }
+
+        public static string FullNodeRPC()
+        {
+            return settings["FullNodeRPC"];
+        }
+
+        public static string FullNodeUser()
+        {
+            return settings["FullNodeUser"];
+        }
+
+        public static string FullNodePass()
+        {
+            return settings["FullNodePass"];
+        }
+        public static string DatabaseLocation()
+        {
+            return settings["DatabaseLocation"];
+        }
+
+
+
+        public static uint FeePercent()
+        {
+            return Convert.ToUInt32(settings["FeePercent"]);
+        }
+
+
+        public static int SecondsBetweenPayouts()
+        {
+            return Convert.ToInt32(settings["SecondsBetweenPayouts"]);
+        }
+
+        public static UInt64 MinPayout()
+        {
+            return Convert.ToUInt64(settings["MinPayout"]);
+        }
+
+
+        public static string MiningWallet()
+        {
+            return settings["MiningWallet"];
+        }
+    
+    public static string ProfitWallet()
+        {
+            return settings["ProfitWallet"];
+        }
+
 
         public static Dictionary<string, string> settings = new Dictionary<string, string>();
 
