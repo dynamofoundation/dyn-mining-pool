@@ -172,8 +172,8 @@ namespace dyn_mining_pool
         {
             var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
-            var cmd = new SqliteCommand("select sum(pending_payout_amount) from pending_payout", conn);
-            return (UInt64)cmd.ExecuteScalar();
+            var cmd = new SqliteCommand("select ifnull(sum(pending_payout_amount),0) from pending_payout", conn);
+            return Convert.ToUInt64(cmd.ExecuteScalar().ToString());
         }
 
         public static void SavePendingPayout(string wallet, UInt64 amount)

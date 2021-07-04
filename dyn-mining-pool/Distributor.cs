@@ -86,6 +86,8 @@ namespace dyn_mining_pool
                     catch (Exception e)
                     {
                         Console.WriteLine("Error in running payout, retrying in 10 seconds.");
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
                     }
 
                     Database.UpdateSetting("last_payout_run", unixNow.ToString());
