@@ -20,7 +20,7 @@ namespace dyn_mining_pool
 
             HttpListener listener = new HttpListener();
 
-            listener.Prefixes.Add(Global.PoolListenerEndpoint);
+            listener.Prefixes.Add(Global.PoolListenerEndpoint());
 
             listener.Start();
             Console.WriteLine("Listening...");

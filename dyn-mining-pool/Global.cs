@@ -82,7 +82,7 @@ namespace dyn_mining_pool
             return settings["MiningWallet"];
         }
     
-    public static string ProfitWallet()
+        public static string ProfitWallet()
         {
             return settings["ProfitWallet"];
         }

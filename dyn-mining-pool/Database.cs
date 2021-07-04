@@ -12,7 +12,7 @@ namespace dyn_mining_pool
         public static void CreateOrOpenDatabase()
         {
 
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
 
             var cmd = new SqliteCommand("select count(name) from sqlite_master where type = 'table' and name = 'share'", conn);
@@ -81,7 +81,7 @@ namespace dyn_mining_pool
         public static void SaveShare ( string wallet, string hash )
         {
 
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("insert into share (share_timestamp, share_wallet, share_hash, share_status) values (@p1,@p2,@p3,@p4)", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
@@ -93,7 +93,7 @@ namespace dyn_mining_pool
 
         public static string GetSetting (string key)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("select setting_value from setting where setting_key = @p1", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", key));
@@ -103,7 +103,7 @@ namespace dyn_mining_pool
 
         public static void UpdateSetting (string key, string value)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("update setting set setting_value = @p1 where setting_key = @p2", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", value));
@@ -116,7 +116,7 @@ namespace dyn_mining_pool
         {
             List<miningShare> result = new List<miningShare>();
 
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("select share_wallet, count(1) from share where share_status = 'pending' and share_timestamp < " + endTime + " group by share_wallet", conn);
             var reader = cmd.ExecuteReader();
@@ -136,7 +136,7 @@ namespace dyn_mining_pool
 
         public static void SaveReward(string blockHash)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("insert into reward (reward_timestamp, reward_height, reward_hash, reward_status) values (@p1,@p2,@p3,@p4)", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
@@ -149,7 +149,7 @@ namespace dyn_mining_pool
 
         public static void SavePayout(string wallet, UInt64 amount)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("insert into payout (payout_timestamp, payout_wallet, payout_amount) values (@p1,@p2,@p3)", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
@@ -160,7 +160,7 @@ namespace dyn_mining_pool
 
         public static void ClearPendingRewards()
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("update reward set reward_status = 'paid' where reward_status = 'pending'", conn);
             cmd.ExecuteNonQuery();
@@ -170,7 +170,7 @@ namespace dyn_mining_pool
 
         public static UInt64 pendingPayouts()
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("select sum(pending_payout_amount) from pending_payout", conn);
             return (UInt64)cmd.ExecuteScalar();
@@ -180,14 +180,14 @@ namespace dyn_mining_pool
         {
             if (pendingWalletExists(wallet))
             {
-                var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+                var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
                 conn.Open();
                 var cmd = new SqliteCommand("update pending_payout set pending_amount = pending_amount " + amount, conn);
                 cmd.ExecuteNonQuery();
             }
             else
             {
-                var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+                var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
                 conn.Open();
                 var cmd = new SqliteCommand("insert into pending_payout (pending_payout_wallet, pending_payout_amount) values (@p1,@p2)", conn);
                 cmd.Parameters.Add(new SqliteParameter("@p1", wallet));
@@ -199,7 +199,7 @@ namespace dyn_mining_pool
 
         static bool pendingWalletExists(string wallet)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("select count(1) from pending_payout where pending_payout_wallet = @p1", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", wallet));
@@ -212,7 +212,7 @@ namespace dyn_mining_pool
         {
             List<pendingPayout> result = new List<pendingPayout>();
 
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("select pending_payout_wallet, pending_payout_amount from pending_payout", conn);
             var reader = cmd.ExecuteReader();
@@ -228,7 +228,7 @@ namespace dyn_mining_pool
 
         public static void DeletePendingPayout (string wallet)
         {
-            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation);
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("delete from pending_payout where pending_payout_wallet = @p1", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", wallet));

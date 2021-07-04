@@ -37,7 +37,7 @@ namespace dyn_mining_pool
                 if (method == "gethashfunction")
                 {
                     Global.UpdateRand(37);
-                    var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+                    var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
 
                     var postData = text;
                     var data = Encoding.ASCII.GetBytes(postData);
@@ -46,8 +46,8 @@ namespace dyn_mining_pool
                     webrequest.ContentType = "application/x-www-form-urlencoded";
                     webrequest.ContentLength = data.Length;
 
-                    var username = Global.FullNodeUser;
-                    var password = Global.FullNodePass;
+                    var username = Global.FullNodeUser();
+                    var password = Global.FullNodePass();
                     string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
                     webrequest.Headers.Add("Authorization", "Basic " + encoded);
 
@@ -71,7 +71,7 @@ namespace dyn_mining_pool
                 {
                     Global.UpdateRand(43);
 
-                    var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+                    var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
 
                     var postData = text;
                     var data = Encoding.ASCII.GetBytes(postData);
@@ -80,8 +80,8 @@ namespace dyn_mining_pool
                     webrequest.ContentType = "application/x-www-form-urlencoded";
                     webrequest.ContentLength = data.Length;
 
-                    var username = Global.FullNodeUser;
-                    var password = Global.FullNodePass;
+                    var username = Global.FullNodeUser();
+                    var password = Global.FullNodePass();
                     string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
                     webrequest.Headers.Add("Authorization", "Basic " + encoded);
 
@@ -162,7 +162,7 @@ namespace dyn_mining_pool
 
                         if (ok)
                         {
-                            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+                            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
 
                             var postData = text;
                             var data = Encoding.ASCII.GetBytes(postData);
@@ -171,8 +171,8 @@ namespace dyn_mining_pool
                             webrequest.ContentType = "application/x-www-form-urlencoded";
                             webrequest.ContentLength = data.Length;
 
-                            var username = Global.FullNodeUser;
-                            var password = Global.FullNodePass;
+                            var username = Global.FullNodeUser();
+                            var password = Global.FullNodePass();
                             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
                             webrequest.Headers.Add("Authorization", "Basic " + encoded);
 
@@ -199,7 +199,7 @@ namespace dyn_mining_pool
                     Global.UpdateRand(103);
 
                     dynamic poolData = new System.Dynamic.ExpandoObject();
-                    poolData.walletAddr = Global.miningWallet;
+                    poolData.walletAddr = Global.MiningWallet();
                     poolData.nonce = (uint)(Global.RandomNum(31) * DateTime.UnixEpoch.Ticks);
 
                     strResponse = JsonConvert.SerializeObject(poolData);

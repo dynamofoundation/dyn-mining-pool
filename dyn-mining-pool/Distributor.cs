@@ -46,7 +46,7 @@ namespace dyn_mining_pool
 
                 Int64 lastRun = (Int64)Convert.ToDouble(Database.GetSetting("last_payout_run"));
                 Int64 unixNow = (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
-                if (unixNow - lastRun > Global.secondsBetweenPayouts)
+                if (unixNow - lastRun > Global.SecondsBetweenPayouts())
                 {
                     Console.WriteLine("Running payout");
 
@@ -55,8 +55,8 @@ namespace dyn_mining_pool
                         UInt64 walletBalance = getMiningWalletBalance() - Database.pendingPayouts();
                         if (walletBalance > 0)
                         {
-                            UInt64 fee = (walletBalance * Global.feePercent) / 100;
-                            sendMoney(Global.profitWallet, fee);
+                            UInt64 fee = (walletBalance * Global.FeePercent()) / 100;
+                            sendMoney(Global.ProfitWallet(), fee);
                             walletBalance -= fee;
                             List<miningShare> shares = Database.CountShares(unixNow);
                             UInt64 totalShares = 0;
@@ -65,7 +65,7 @@ namespace dyn_mining_pool
                             foreach (miningShare s in shares)
                             {
                                 UInt64 payout = (walletBalance * s.shares) / totalShares;
-                                if (payout >= Global.minPayout)
+                                if (payout >= Global.MinPayout())
                                     sendMoney(s.wallet, payout);
                                 else
                                     Database.SavePendingPayout(s.wallet, payout);
@@ -74,10 +74,10 @@ namespace dyn_mining_pool
                             List<pendingPayout> pending = Database.GetPendingPayouts();
                             foreach (pendingPayout p in pending)
                             {
-                                if (p.amount > Global.minPayout)
+                                if (p.amount > Global.MinPayout())
                                 {
                                     sendMoney(p.wallet, p.amount);
-                                    Database.DeletePendingPayouy(p.wallet);
+                                    Database.DeletePendingPayout(p.wallet);
                                 }
                             }
 
@@ -100,7 +100,7 @@ namespace dyn_mining_pool
 
         public UInt64 getMiningWalletBalance()
         {
-            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
 
             string postData = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"getbalance\", \"params\": [\"*\", 10]}";
             var data = Encoding.ASCII.GetBytes(postData);
@@ -109,8 +109,8 @@ namespace dyn_mining_pool
             webrequest.ContentType = "application/x-www-form-urlencoded";
             webrequest.ContentLength = data.Length;
 
-            var username = Global.FullNodeUser;
-            var password = Global.FullNodePass;
+            var username = Global.FullNodeUser();
+            var password = Global.FullNodePass();
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
             webrequest.Headers.Add("Authorization", "Basic " + encoded);
 
@@ -137,7 +137,7 @@ namespace dyn_mining_pool
 
             decimal dAmount = (decimal)amount / 100000000m;
 
-            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC);
+            var webrequest = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
 
             string postData = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"sendtoaddress\", \"params\": [\"" + wallet + "\", " + dAmount + ", \"\", \"\", true]}";
             var data = Encoding.ASCII.GetBytes(postData);
@@ -147,8 +147,8 @@ namespace dyn_mining_pool
             webrequest.ContentType = "application/x-www-form-urlencoded";
             webrequest.ContentLength = data.Length;
 
-            var username = Global.FullNodeUser;
-            var password = Global.FullNodePass;
+            var username = Global.FullNodeUser();
+            var password = Global.FullNodePass();
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
             webrequest.Headers.Add("Authorization", "Basic " + encoded);
 
