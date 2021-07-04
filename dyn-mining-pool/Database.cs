@@ -182,7 +182,8 @@ namespace dyn_mining_pool
             {
                 var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
                 conn.Open();
-                var cmd = new SqliteCommand("update pending_payout set pending_amount = pending_amount " + amount, conn);
+                var cmd = new SqliteCommand("update pending_payout set pending_payout_amount = pending_payout_amount + " + amount + " where pending_payout_wallet = @p1", conn);
+                cmd.Parameters.Add(new SqliteParameter("@p1", wallet));
                 cmd.ExecuteNonQuery();
             }
             else
@@ -203,7 +204,7 @@ namespace dyn_mining_pool
             conn.Open();
             var cmd = new SqliteCommand("select count(1) from pending_payout where pending_payout_wallet = @p1", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", wallet));
-            return ((int)cmd.ExecuteScalar() > 0);
+            return (Convert.ToUInt32(cmd.ExecuteScalar().ToString()) > 0);
 
         }
 

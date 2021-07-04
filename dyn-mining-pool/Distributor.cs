@@ -65,7 +65,7 @@ namespace dyn_mining_pool
                             foreach (miningShare s in shares)
                             {
                                 UInt64 payout = (walletBalance * s.shares) / totalShares;
-                                if (payout >= Global.MinPayout())
+                                if (payout >= Global.MinPayout() * 100000000)
                                     sendMoney(s.wallet, payout);
                                 else
                                     Database.SavePendingPayout(s.wallet, payout);
@@ -74,7 +74,7 @@ namespace dyn_mining_pool
                             List<pendingPayout> pending = Database.GetPendingPayouts();
                             foreach (pendingPayout p in pending)
                             {
-                                if (p.amount > Global.MinPayout())
+                                if (p.amount > Global.MinPayout() * 100000000)
                                 {
                                     sendMoney(p.wallet, p.amount);
                                     Database.DeletePendingPayout(p.wallet);
