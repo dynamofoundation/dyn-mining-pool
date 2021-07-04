@@ -52,35 +52,38 @@ namespace dyn_mining_pool
 
                     try
                     {
-                        UInt64 walletBalance = getMiningWalletBalance() - Database.pendingPayouts();
-                        if (walletBalance > 0)
+                        if (getMiningWalletBalance() > 0)
                         {
-                            UInt64 fee = (walletBalance * Global.FeePercent()) / 100;
-                            sendMoney(Global.ProfitWallet(), fee);
-                            walletBalance -= fee;
-                            List<miningShare> shares = Database.CountShares(unixNow);
-                            UInt64 totalShares = 0;
-                            foreach (miningShare s in shares)
-                                totalShares += s.shares;
-                            foreach (miningShare s in shares)
+                            UInt64 walletBalance = getMiningWalletBalance() - Database.pendingPayouts();
+                            if (walletBalance > 1000)
                             {
-                                UInt64 payout = (walletBalance * s.shares) / totalShares;
-                                if (payout >= Global.MinPayout() * 100000000)
-                                    sendMoney(s.wallet, payout);
-                                else
-                                    Database.SavePendingPayout(s.wallet, payout);
-                            }
-
-                            List<pendingPayout> pending = Database.GetPendingPayouts();
-                            foreach (pendingPayout p in pending)
-                            {
-                                if (p.amount > Global.MinPayout() * 100000000)
+                                UInt64 fee = (walletBalance * Global.FeePercent()) / 100;
+                                sendMoney(Global.ProfitWallet(), fee);
+                                walletBalance -= fee;
+                                List<miningShare> shares = Database.CountShares(unixNow);
+                                UInt64 totalShares = 0;
+                                foreach (miningShare s in shares)
+                                    totalShares += s.shares;
+                                foreach (miningShare s in shares)
                                 {
-                                    sendMoney(p.wallet, p.amount);
-                                    Database.DeletePendingPayout(p.wallet);
+                                    UInt64 payout = (walletBalance * s.shares) / totalShares;
+                                    if (payout >= Global.MinPayout() * 100000000)
+                                        sendMoney(s.wallet, payout);
+                                    else
+                                        Database.SavePendingPayout(s.wallet, payout);
                                 }
-                            }
 
+                                List<pendingPayout> pending = Database.GetPendingPayouts();
+                                foreach (pendingPayout p in pending)
+                                {
+                                    if (p.amount > Global.MinPayout() * 100000000)
+                                    {
+                                        sendMoney(p.wallet, p.amount);
+                                        Database.DeletePendingPayout(p.wallet);
+                                    }
+                                }
+                                ClearPendingRewards();
+                            }
                         }
                     }
                     catch (Exception e)
