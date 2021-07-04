@@ -82,7 +82,7 @@ namespace dyn_mining_pool
                                         Database.DeletePendingPayout(p.wallet);
                                     }
                                 }
-                                ClearPendingRewards();
+                                Database.ClearPendingRewards();
                             }
                         }
                     }
