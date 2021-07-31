@@ -20,7 +20,7 @@ namespace dyn_mining_pool
 
             if (exists == 0)
             {
-                cmd = new SqliteCommand("create table share (share_id integer primary key, share_timestamp integer, share_wallet text, share_hash text, share_status text) ", conn);
+                cmd = new SqliteCommand("create table share (share_id integer primary key, share_timestamp integer, share_wallet text, share_hash text, share_status text, currentdiff integer, currentnethash integer) ", conn);
                 cmd.ExecuteNonQuery();
 
                 cmd = new SqliteCommand("create index share_idx1 on share (share_status, share_timestamp)", conn);
@@ -71,27 +71,51 @@ namespace dyn_mining_pool
                 cmd.Parameters.Add(new SqliteParameter("@p1", "last_payout_run"));
                 cmd.Parameters.Add(new SqliteParameter("@p2", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
                 cmd.ExecuteNonQuery();
+            }
 
+            cmd = new SqliteCommand("select count(name) from sqlite_master where type = 'table' and name = 'hash_rate'", conn);
+            exists = (Int64)cmd.ExecuteScalar();
+
+            if (exists == 0)
+            {
+                cmd = new SqliteCommand("CREATE TABLE hash_rate (hashrate_id integer primary key,poolhashrate integer,pooldiff integer, cur_networkdiff integer, cur_networkhash integer,tot_sharecount integer,range_min_time integer,range_max_time integer,insert_range_00 integer,insert_range_59 integer,currenttimestamp integer)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            cmd = new SqliteCommand("select count(name) from sqlite_master where type = 'table' and name = 'hashflag'", conn);
+            exists = (Int64)cmd.ExecuteScalar();
+
+            if (exists == 0)
+            {
+                cmd = new SqliteCommand("CREATE TABLE hashflag (flag_key text, insert_timestamp integer,  next_insert_timestamp integer) ", conn);
+                cmd.ExecuteNonQuery();
+
+                cmd = new SqliteCommand("insert into hashflag select \"last_insert_run\", @p1, @p2", conn);
+                cmd.Parameters.Add(new SqliteParameter("@p1", (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds)));
+                cmd.Parameters.Add(new SqliteParameter("@p2", (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds + 60)));
+                cmd.ExecuteNonQuery();
 
             }
 
         }
 
 
-        public static void SaveShare ( string wallet, string hash )
+        public static void SaveShare(string wallet, string hash, string currentdiff, string currentnethash)
         {
 
             var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
-            var cmd = new SqliteCommand("insert into share (share_timestamp, share_wallet, share_hash, share_status) values (@p1,@p2,@p3,@p4)", conn);
+            var cmd = new SqliteCommand("insert into share (share_timestamp, share_wallet, share_hash, share_status, currentdiff, currentnethash) values (@p1,@p2,@p3,@p4,@p5,@p6)", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
             cmd.Parameters.Add(new SqliteParameter("@p2", wallet));
             cmd.Parameters.Add(new SqliteParameter("@p3", hash));
             cmd.Parameters.Add(new SqliteParameter("@p4", "pending"));
+            cmd.Parameters.Add(new SqliteParameter("@p5", currentdiff));
+            cmd.Parameters.Add(new SqliteParameter("@p6", currentnethash));
             cmd.ExecuteNonQuery();
         }
 
-        public static string GetSetting (string key)
+        public static string GetSetting(string key)
         {
             var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
@@ -101,7 +125,7 @@ namespace dyn_mining_pool
 
         }
 
-        public static void UpdateSetting (string key, string value)
+        public static void UpdateSetting(string key, string value)
         {
             var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
@@ -123,7 +147,7 @@ namespace dyn_mining_pool
             while (reader.Read())
             {
                 string wallet = reader[0].ToString();
-                UInt32 shares = (UInt32)Convert.ToInt32 ( reader[1].ToString());
+                UInt32 shares = (UInt32)Convert.ToInt32(reader[1].ToString());
                 result.Add(new miningShare(wallet, shares));
             }
 
@@ -227,12 +251,55 @@ namespace dyn_mining_pool
             return result;
         }
 
-        public static void DeletePendingPayout (string wallet)
+        public static void DeletePendingPayout(string wallet)
         {
             var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
             conn.Open();
             var cmd = new SqliteCommand("delete from pending_payout where pending_payout_wallet = @p1", conn);
             cmd.Parameters.Add(new SqliteParameter("@p1", wallet));
+            cmd.ExecuteNonQuery();
+        }
+
+        public static Int64 Getflag(string key)
+        {
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
+            conn.Open();
+            var cmd = new SqliteCommand("select next_insert_timestamp from hashflag where flag_key = @p1", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p1", key));
+            return (Int64)cmd.ExecuteScalar();
+        }
+
+        public static void SaveHashrate()
+        {
+            Int64 unixNowMOD = (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds % 60);
+            Int64 unixNowDIFF = (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds - unixNowMOD);
+            Int64 minus60 = (Int64)(unixNowDIFF - 60);
+            Int64 minus1 = (Int64)(unixNowDIFF - 1);
+            Int64 lasthour = (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds - 3600);
+
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
+            conn.Open();
+
+            var cmd = new SqliteCommand("select min(share_id) from share where share_timestamp >= @p5 ", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p5", lasthour));
+            Int64 shareidval = (Int64)cmd.ExecuteScalar();
+
+            cmd = new SqliteCommand("insert into hash_rate (poolhashrate,pooldiff,cur_networkdiff,cur_networkhash,tot_sharecount,range_min_time,range_max_time,insert_range_00,insert_range_59,currenttimestamp) select ((avg(currentdiff)/256) * count(share_hash) * 4294967296)/60, (currentdiff)/256, avg(currentdiff), avg(currentnethash), " +
+                "count(share_hash),min(share_timestamp), max(share_timestamp), @p1,@p2,@p3 from share where share_timestamp between @p1 and @p2 and share_id >= @p4", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p3", (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds)));
+            cmd.Parameters.Add(new SqliteParameter("@p1", minus60));
+            cmd.Parameters.Add(new SqliteParameter("@p2", minus1));
+            cmd.Parameters.Add(new SqliteParameter("@p4", shareidval));
+            cmd.ExecuteNonQuery();
+        }
+
+        public static void UpdateHashflag()
+        {
+            var conn = new SqliteConnection("Filename=" + Global.DatabaseLocation());
+            conn.Open();
+            var cmd = new SqliteCommand("UPDATE hashflag SET insert_timestamp = @p1, next_insert_timestamp = @p2  WHERE flag_key = 'last_insert_run'", conn);
+            cmd.Parameters.Add(new SqliteParameter("@p1", (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds)));
+            cmd.Parameters.Add(new SqliteParameter("@p2", (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds + 60)));
             cmd.ExecuteNonQuery();
         }
 

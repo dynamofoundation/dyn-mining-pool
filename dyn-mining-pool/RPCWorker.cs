@@ -25,7 +25,7 @@ namespace dyn_mining_pool
                 string text = reader.ReadToEnd();
 
                 dynamic rpcData = JsonConvert.DeserializeObject<dynamic>(text);
-                
+
 
                 string strResponse = "";
 
@@ -143,7 +143,56 @@ namespace dyn_mining_pool
                     //they gave us a good hash - add it to their tally and submit if it meets the network hashrate
                     if (ok)
                     {
-                        Database.SaveShare(minerWallet, hashA);
+                        //rpc call for getmininginfo
+                        Global.UpdateRand(37);
+                        string strResponse1 = "";
+                        string strResponse2 = "";
+                        var webrequest1 = (HttpWebRequest)WebRequest.Create(Global.FullNodeRPC());
+                        var postData1 = ("{ \"id\": 0, \"method\" : \"getmininginfo\", \"params\" : [] }");
+                        var data1 = Encoding.ASCII.GetBytes(postData1);
+                        //Console.WriteLine("getmininginfo" + postData1);
+
+                        webrequest1.Method = "POST";
+                        webrequest1.ContentType = "application/x-www-form-urlencoded";
+                        webrequest1.ContentLength = data1.Length;
+
+                        var username1 = Global.FullNodeUser();
+                        var password1 = Global.FullNodePass();
+                        string encoded1 = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username1 + ":" + password1));
+                        webrequest1.Headers.Add("Authorization", "Basic " + encoded1);
+
+                        using (var stream = webrequest1.GetRequestStream())
+                        {
+                            stream.Write(data1, 0, data1.Length);
+                        }
+
+                        var webresponse1 = (HttpWebResponse)webrequest1.GetResponse();
+
+                        strResponse1 = new StreamReader(webresponse1.GetResponseStream()).ReadToEnd();
+
+                        dynamic progData1 = JsonConvert.DeserializeObject<dynamic>(strResponse1);
+
+                        strResponse2 = JsonConvert.SerializeObject(progData1);
+
+                        string currentdiff = progData1.result.difficulty;
+                        string currentnethash = progData1.result.networkhashps;
+
+                        Database.SaveShare(minerWallet, hashA, currentdiff, currentnethash);
+
+                        Int64 nextruncheck = Database.Getflag("last_insert_run");
+                        Int64 unixNow = (Int64)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
+
+                        //check if it is time to run
+                        if (unixNow >= nextruncheck)
+                        {
+                            //Console.WriteLine("TIME TO RUN  " + unixNow + " "+ nextruncheck + " " );
+                            Database.SaveHashrate();
+                            Database.UpdateHashflag();
+                        }
+                        //else
+                        //{
+                        //Console.WriteLine("WILL NOT RUN  " + unixNow + " " + nextruncheck);
+                        //}		
 
                         //check if we should submit
                         nativeTarget = Global.CurrBlockTarget;
@@ -221,7 +270,7 @@ namespace dyn_mining_pool
 
                 Global.UpdateRand(sum);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Error in worker thread:" + e.Message);
                 Console.WriteLine(e.StackTrace);
